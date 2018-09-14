@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export GPGKEYFILE=$1"/.ssh/authorized_gpgs"
+for MASTER in $(<$GPGKEYFILE); do
+	gpg2 --keyserver pgp.mit.edu --recv-keys $MASTER >/dev/null 2>/dev/null
+	for SUBKEY in `gpg2 --with-colons --list-key $MASTER|egrep -A 100 "^pub:[^idren]:"|egrep "^(pub|sub):[^idren]:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*a[^:]*:.*"|cut -d : -f 5`; do
+		gpg2 --export $MASTER|openpgp2ssh $SUBKEY
+	done
+done
